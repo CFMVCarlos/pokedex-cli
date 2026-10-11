@@ -2,15 +2,19 @@
 
 <div align="center">
 
-![Go Version](https://img.shields.io/badge/Go-1.27+-00ADD8?style=for-the-badge&logo=go&logoColor=white)
-![License](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)
-![Curriculum](https://img.shields.io/badge/Boot.dev-Backend%20Track-805AD5?style=for-the-badge)
-![API](https://img.shields.io/badge/PokeAPI-v2-EF5350?style=for-the-badge)
-![Tests](https://img.shields.io/badge/Tests-Passing-brightgreen?style=for-the-badge)
+[![Go Version](https://img.shields.io/badge/Go-1.27+-00ADD8?style=for-the-badge&logo=go&logoColor=white)](https://go.dev/)
+[![PokeAPI](https://img.shields.io/badge/PokeAPI-v2-EF5350?style=for-the-badge&logo=pokemon&logoColor=white)](https://pokeapi.co/)
+[![Tests](https://img.shields.io/badge/Tests-Passing-brightgreen?style=for-the-badge&logo=githubactions&logoColor=white)](https://github.com/CFMVCarlos/pokedexcli)
+[![Curriculum](https://img.shields.io/badge/Boot.dev-Backend%20Track-805AD5?style=for-the-badge)](https://boot.dev)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
 
-**An interactive command-line Pokédex REPL built in Go, powered by PokeAPI with a thread-safe, concurrent TTL cache.**
+<br />
 
-[Features](#-features) • [Installation](#-installation) • [Usage](#-usage-and-commands) • [Architecture](#-project-architecture) • [Testing](#-testing--verification)
+**An interactive command-line Pokédex REPL built with idiomatic Go, featuring thread-safe TTL caching, animated CLI spinners, and zero-dependency ANSI styling.**
+
+<br />
+
+[Features](#-features) • [Installation](#-installation) • [Usage & Commands](#-usage-and-commands) • [Architecture](#-project-architecture) • [Testing](#-testing--verification)
 
 </div>
 
@@ -18,18 +22,19 @@
 
 ## ⚡ Features
 
-- 🎮 **Interactive REPL Loop:** Fast, intuitive command prompt with input sanitization and command routing.
-- 🎨 **Zero-Dependency ANSI Colors:** Vibrant color styling for prompts, elemental types, catches, and escapes (respects `NO_COLOR`).
-- 💾 **Persistent Pokédex Storage:** Automatically persists caught and released Pokémon to `pokedex.json` with manual `save` and `load` support.
-- 🗺️ **World & Area Navigation:** Paginated exploration of Pokémon location areas (`map` / `mapb`).
-- 🔍 **Area Exploration:** Discover all Pokémon native to a specific location area (`explore`).
-- 🎯 **Catch Mechanics:** Realistic catch probability scaled dynamically against a Pokémon's `base_experience` (`catch`).
-- 📊 **Detailed Inspection:** View captured Pokémon attributes, including height, weight, base stats, and types (`inspect`).
-- 📖 **Pokédex Ledger:** Real-time inventory tracking of all captured Pokémon (`pokedex`).
-- 👋 **Pokémon Release:** Release captured Pokémon back into the wild (`release`).
-- 📈 **Trainer Summary:** Detailed analytics including total caught, heaviest, tallest, favorite type, and type distribution (`summary`).
-- 🏷️ **Elemental Type Filter:** Quickly filter your caught collection by Pokémon type (`filter`).
-- ⚡ **Thread-Safe In-Memory Cache:** Custom `pokecache` package with background goroutine reaping based on configurable TTL intervals to minimize redundant network requests.
+- 🎮 **Interactive REPL Loop**: Fast, intuitive command prompt with input sanitization, dynamic command registry, and error handling.
+- ⏳ **Animated CLI Spinner**: Responsive terminal spinner providing instant visual feedback during async PokeAPI network calls.
+- 🎨 **Zero-Dependency ANSI Colors**: Vibrant terminal color styling for prompts, encounter types, successful catches, and escapes (respects `NO_COLOR`).
+- 💾 **Thread-Safe Repository Persistence**: Automatically stores caught Pokémon into `pokedex.json` via mutex-protected (`sync.RWMutex`) repository layer with manual `save` and `load` support.
+- 🗺️ **World & Area Navigation**: Paginated exploration of Pokémon location areas (`map` / `mapb`).
+- 🔍 **Area Exploration**: Discovers all Pokémon native to a specific location area (`explore`).
+- 🎯 **Catch Mechanics**: Dynamic catch probability calculated against Pokémon `base_experience` (`catch`).
+- 📊 **Detailed Inspection**: View captured Pokémon attributes, including height, weight, base stats, and elemental types (`inspect`).
+- 📖 **Pokédex Ledger**: Real-time inventory tracking of all captured Pokémon (`pokedex`).
+- 👋 **Pokémon Release**: Releases captured Pokémon back into the wild (`release`).
+- 📈 **Trainer Summary**: Detailed analytics including total caught, heaviest, tallest, favorite type, and type distribution (`summary`).
+- 🏷️ **Elemental Type Filter**: Filter caught Pokémon collection by specific elemental types (`filter`).
+- ⚡ **Concurrent In-Memory Cache**: Custom `pokecache` package with background goroutine reaping based on configurable TTL intervals to avoid redundant HTTP requests.
 
 ---
 
@@ -37,7 +42,7 @@
 
 ### Prerequisites
 
-- [Go](https://go.dev/dl/) **1.22+** (configured for Go 1.27)
+- [Go](https://go.dev/dl/) **1.22+** (tested with Go 1.27)
 - `git`
 
 ### Clone and Run
@@ -87,14 +92,15 @@ eterna-city-area
 pastoria-city-area
 ...
 Pokedex > explore pastoria-city-area
-Exploring pastoria-city-area...
-Found Pokemon:
+⠋ Exploring pastoria-city-area...
+Found Pokemon in pastoria-city-area:
  - tentacool
  - tentacruel
  - gyarados
  - remoraid
 
 Pokedex > catch remoraid
+⠋ Locating remoraid...
 Throwing a Pokeball at remoraid...
 remoraid was caught!
 You may now inspect it with the inspect command.
@@ -137,28 +143,40 @@ Closing the Pokedex... Goodbye!
 
 ## 🏗️ Project Architecture
 
+The codebase follows idiomatic Go package design, separating CLI orchestration, HTTP client communication, caching, persistence, and UI presentation:
+
 ```text
 pokedexcli/
-├── main.go                     # Application entrypoint & dependency setup
-├── config.go                   # State types (config, cliCommand, Pokemon, LocationArea)
-├── colors.go                   # Zero-dependency ANSI terminal color formatting
-├── colors_test.go              # Unit tests for ANSI styling and NO_COLOR support
-├── repl.go                     # REPL input scanner, dispatch loop, and command handlers
-├── repl_test.go                # Comprehensive unit test suite for REPL and commands
 ├── internal/
-│   └── pokecache/
-│       ├── pokecache.go        # Thread-safe in-memory TTL cache with mutexes & ticker reap loop
-│       └── pokecache_test.go   # Concurrency and expiration tests for pokecache
-├── go.mod                      # Go module definition
-└── README.md                   # Project documentation
+│   ├── cli/
+│   │   ├── commands.go         # Command registry and execution callbacks
+│   │   ├── commands_test.go    # Unit tests for CLI commands
+│   │   ├── config.go           # CLI state, dependencies, and configuration
+│   │   ├── repl.go             # Interactive REPL prompt scanner & loop
+│   │   └── repl_test.go        # Unit tests for input sanitization & routing
+│   ├── pokeapi/
+│   │   ├── client.go           # PokeAPI HTTP client with integrated TTL cache
+│   │   └── types.go            # Domain models (Pokemon, LocationArea, Encounters)
+│   ├── pokecache/
+│   │   ├── pokecache.go        # Thread-safe in-memory cache with goroutine reaper
+│   │   └── pokecache_test.go   # Concurrency, data race, and TTL tests
+│   ├── repository/
+│   │   └── pokedex.go          # Mutex-protected JSON storage layer (Pokedex ledger)
+│   └── ui/
+│       ├── colors.go           # ANSI terminal styling (supports NO_COLOR)
+│       ├── colors_test.go      # Tests for color formatting functions
+│       └── spinner.go          # Asynchronous terminal spinner with goroutines
+├── main.go                     # Entrypoint configuring dependencies and starting REPL
+├── go.mod                      # Go module manifest
+└── LICENSE                     # MIT License
 ```
 
 ### Technical Highlights
 
-- **`pokecache.Cache`**: Uses `sync.Mutex` to protect the underlying map against data races. A background goroutine (`time.NewTicker`) reaps expired entries based on a configurable interval.
-- **Persistence Layer**: Auto-saves on catch and release, while offering explicit `save` and `load` commands.
-- **Dynamic Catch Rates**: Employs `math/rand` against Pokémon `base_experience` to balance encounter difficulty.
-- **Standard Library Only**: Built cleanly using Go's standard library (`net/http`, `sync`, `time`, `encoding/json`, `bufio`, `strings`, `math/rand`, `os`).
+- **Hexagonal / Internal Package Architecture**: Clean boundaries prevent circular dependencies and allow isolated unit testing.
+- **`pokecache.Cache`**: Uses `sync.RWMutex` to protect in-memory cache reads while background ticker goroutines reap expired entries.
+- **`repository.Pokedex`**: Thread-safe persistence repository ensuring reliable JSON read/write operations without race conditions.
+- **Zero External Dependencies**: Implemented entirely with the Go standard library (`net/http`, `sync`, `time`, `encoding/json`, `bufio`, `strings`, `math/rand`, `os`).
 
 ---
 
@@ -177,13 +195,19 @@ go test -v ./...
 go test -race ./...
 ```
 
+All package tests pass with zero data races detected:
+- ✅ `pokedexcli/internal/cli`: REPL word cleaning, routing, command dispatch.
+- ✅ `pokedexcli/internal/pokecache`: Cache insertion, expiration reaping, concurrent reads/writes.
+- ✅ `pokedexcli/internal/ui`: ANSI color codes, strip handling, and `NO_COLOR` environment support.
+
 ---
 
 ## 📜 License
 
 This project is licensed under the [MIT License](LICENSE).
 
-## 🎓 Acknowledgements
+---
 
-- Built as part of the [Boot.dev](https://boot.dev) Backend Engineering curriculum.
-- Pokémon data provided by [PokeAPI](https://pokeapi.co/).
+<div align="center">
+  <sub>Built as part of the <a href="https://boot.dev">Boot.dev</a> Backend Engineering curriculum by <a href="https://github.com/CFMVCarlos">Carlos Valente</a>. Pokémon data provided by <a href="https://pokeapi.co/">PokeAPI</a>.</sub>
+</div>
