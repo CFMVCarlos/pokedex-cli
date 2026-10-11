@@ -25,3 +25,6 @@ go.work
 
 # Saved data
 pokedex.json
+
+# AI Agent metadata
+.jules/
