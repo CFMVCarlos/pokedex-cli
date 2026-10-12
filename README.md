@@ -166,6 +166,8 @@ pokedexcli/
 │       ├── colors.go           # ANSI terminal styling (supports NO_COLOR)
 │       ├── colors_test.go      # Tests for color formatting functions
 │       └── spinner.go          # Asynchronous terminal spinner with goroutines
+├── Makefile                     # Developer workflow task targets (build, test, lint, clean)
+├── lefthook.yml                 # Git pre-commit & commit-msg hooks configuration
 ├── main.go                     # Entrypoint configuring dependencies and starting REPL
 ├── go.mod                      # Go module manifest
 └── LICENSE                     # MIT License

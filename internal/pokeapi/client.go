@@ -1,6 +1,7 @@
 package pokeapi
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -48,11 +49,11 @@ func (c *Client) GetPokemon(pokemonName string) (Pokemon, error) {
 	return data, err
 }
 
-func (c *Client) fetch(url string, target interface{}) error {
+func (c *Client) fetch(url string, target any) error {
 	if val, ok := c.cache.Get(url); ok {
 		return json.Unmarshal(val, target)
 	}
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url, nil)
 	if err != nil {
 		return err
 	}
